@@ -1,19 +1,34 @@
+import pygame
+
+WIDTH = 800
+HEIGHT = 600
+SKY_BLUE = (135, 206, 235)
+YELLOW = (255, 255, 0)
+
+
 def main():
-    height = 10
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Flappy Bird")
+    clock = pygame.time.Clock()
 
-    while True:
-        action = input("f to flap, Enter to fall: ")
+    running = True
+    while running:
+        # 1. handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-        if action == "f":
-            height = height + 3
-        else:
-            height = height - 2
+        # 2. draw
+        screen.fill(SKY_BLUE)
+        bird_x = WIDTH // 2
+        bird_y = HEIGHT // 2
+        pygame.draw.circle(screen, YELLOW, (bird_x, bird_y), 20)
 
-        print("height:", height)
+        pygame.display.flip()
+        clock.tick(60)
 
-        if height <= 0:
-            print("hit the ground, game over")
-            break
+    pygame.quit()
 
 
 if __name__ == "__main__":
