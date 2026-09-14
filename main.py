@@ -14,6 +14,12 @@ def main():
 
     bird_x = WIDTH // 2
     bird_y = HEIGHT // 2
+    bird_velocity = 0
+    started = False
+
+    GRAVITY = 0.5
+    FLAP_STRENGTH = -10
+    MAX_FALL_SPEED = 10
 
     running = True
     while running:
@@ -23,11 +29,22 @@ def main():
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    bird_y = bird_y - 50
-                    if bird_y < 0:
-                        bird_y = 0
+                    bird_velocity = FLAP_STRENGTH
+                    started = True
 
-        # 2. draw
+        # 2. update physics (every frame, but only once the game has started)
+        if started:
+            bird_velocity = bird_velocity + GRAVITY
+            if bird_velocity > MAX_FALL_SPEED:
+                bird_velocity = MAX_FALL_SPEED
+
+            bird_y = bird_y + bird_velocity
+
+            if bird_y < 0:
+                bird_y = 0
+                bird_velocity = 0
+
+        # 3. draw
         screen.fill(SKY_BLUE)
         pygame.draw.circle(screen, YELLOW, (bird_x, bird_y), 20)
 
