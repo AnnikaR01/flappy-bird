@@ -12,17 +12,23 @@ def main():
     pygame.display.set_caption("Flappy Bird")
     clock = pygame.time.Clock()
 
+    bird_x = WIDTH // 2
+    bird_y = HEIGHT // 2
+
     running = True
     while running:
         # 1. handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bird_y = bird_y - 50
+                    if bird_y < 0:
+                        bird_y = 0
 
         # 2. draw
         screen.fill(SKY_BLUE)
-        bird_x = WIDTH // 2
-        bird_y = HEIGHT // 2
         pygame.draw.circle(screen, YELLOW, (bird_x, bird_y), 20)
 
         pygame.display.flip()
