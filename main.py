@@ -11,6 +11,9 @@ SKY_BLUE = (135, 206, 235)
 YELLOW = (255, 255, 0)
 GREEN = (0, 180, 0)
 WHITE = (255, 255, 255)
+BROWN = (200, 150, 80)
+
+GROUND_HEIGHT = 50
 
 PIPE_WIDTH = 70
 PIPE_GAP = 150
@@ -134,7 +137,7 @@ def main():
                 with open(SAVE_FILE, "w") as f:
                     json.dump({"best_score": best_score}, f)
 
-            if bird_y + BIRD_RADIUS >= HEIGHT:
+            if bird_y + BIRD_RADIUS >= HEIGHT - GROUND_HEIGHT:
                 game_over = True
                 hit_sound.play()
 
@@ -145,9 +148,14 @@ def main():
         for pipe in pipes:
             pygame.draw.rect(screen, GREEN, pipe["top"])
             pygame.draw.rect(screen, GREEN, pipe["bottom"])
+        pygame.draw.rect(screen, BROWN, (0, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT))
 
         score_text = font.render(f"Score: {score}   Best: {best_score}", True, WHITE)
         screen.blit(score_text, (10, 10))
+
+        if not started:
+            start_text = font.render("Press SPACE to start", True, WHITE)
+            screen.blit(start_text, (200, 250))
 
         if game_over:
             game_over_text = font.render(f"Game Over! Score: {score}", True, WHITE)
