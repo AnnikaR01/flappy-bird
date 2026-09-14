@@ -7,6 +7,7 @@ HEIGHT = 600
 SKY_BLUE = (135, 206, 235)
 YELLOW = (255, 255, 0)
 GREEN = (0, 180, 0)
+WHITE = (255, 255, 255)
 
 PIPE_WIDTH = 70
 PIPE_GAP = 150
@@ -21,6 +22,7 @@ def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Flappy Bird")
     clock = pygame.time.Clock()
+    font = pygame.font.Font(None, 36)
 
     bird_x = WIDTH // 2
     bird_y = HEIGHT // 2
@@ -40,9 +42,11 @@ def main():
 
     top_pipe = pygame.Rect(PIPE_X, 0, PIPE_WIDTH, top_pipe_height)
     bottom_pipe = pygame.Rect(PIPE_X, GAP_Y + PIPE_GAP, PIPE_WIDTH, bottom_pipe_height)
-    pipes = [(top_pipe, bottom_pipe)]
+    pipes = [{"top": top_pipe, "bottom": bottom_pipe, "scored": False}]
     spawn_timer = 0
     game_over = False
+    score = 0
+    best_score = 0
 
     running = True
     while running:
@@ -52,6 +56,17 @@ def main():
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    if game_over:
+                        bird_y = HEIGHT // 2
+                        game_over = False
+                        score = 0
+                        spawn_timer = 0
+                        pipes = [{
+                            "top": pygame.Rect(PIPE_X, 0, PIPE_WIDTH, top_pipe_height),
+                            "bottom": pygame.Rect(PIPE_X, GAP_Y + PIPE_GAP, PIPE_WIDTH, bottom_pipe_height),
+                            "scored": False,
+                        }]
+
                     bird_velocity = FLAP_STRENGTH
                     started = True
 
@@ -69,9 +84,9 @@ def main():
 
             bird_rect = pygame.Rect(bird_x - BIRD_RADIUS, bird_y - BIRD_RADIUS, BIRD_RADIUS * 2, BIRD_RADIUS * 2)
 
-            for top, bottom in pipes:
-                top.x -= PIPE_SPEED
-                bottom.x -= PIPE_SPEED
+            for pipe in pipes:
+                pipe["top"].x -= PIPE_SPEED
+                pipe["bottom"].x -= PIPE_SPEED
 
             spawn_timer += 1
 
@@ -83,17 +98,25 @@ def main():
 
                 new_top = pygame.Rect(WIDTH, 0, PIPE_WIDTH, new_top_height)
                 new_bottom = pygame.Rect(WIDTH, new_gap_y + PIPE_GAP, PIPE_WIDTH, new_bottom_height)
-                pipes.append((new_top, new_bottom))
+                pipes.append({"top": new_top, "bottom": new_bottom, "scored": False})
 
             kept_pipes = []
-            for top, bottom in pipes:
-                if top.x > -PIPE_WIDTH:
-                    kept_pipes.append((top, bottom))
+            for pipe in pipes:
+                if pipe["top"].x > -PIPE_WIDTH:
+                    kept_pipes.append(pipe)
             pipes = kept_pipes
 
-            for top, bottom in pipes:
-                if bird_rect.colliderect(top) or bird_rect.colliderect(bottom):
+            for pipe in pipes:
+                if bird_rect.colliderect(pipe["top"]) or bird_rect.colliderect(pipe["bottom"]):
                     game_over = True
+
+            for pipe in pipes:
+                if not pipe["scored"] and pipe["top"].x + PIPE_WIDTH < bird_x:
+                    pipe["scored"] = True
+                    score += 1
+
+            if score > best_score:
+                best_score = score
 
             if bird_y + BIRD_RADIUS >= HEIGHT:
                 game_over = True
@@ -101,9 +124,18 @@ def main():
         # 3. draw
         screen.fill(SKY_BLUE)
         pygame.draw.circle(screen, YELLOW, (bird_x, bird_y), BIRD_RADIUS)
-        for top, bottom in pipes:
-            pygame.draw.rect(screen, GREEN, top)
-            pygame.draw.rect(screen, GREEN, bottom)
+        for pipe in pipes:
+            pygame.draw.rect(screen, GREEN, pipe["top"])
+            pygame.draw.rect(screen, GREEN, pipe["bottom"])
+
+        score_text = font.render(f"Score: {score}   Best: {best_score}", True, WHITE)
+        screen.blit(score_text, (10, 10))
+
+        if game_over:
+            game_over_text = font.render(f"Game Over! Score: {score}", True, WHITE)
+            screen.blit(game_over_text, (200, 250))
+            restart_text = font.render("Press SPACE to restart", True, WHITE)
+            screen.blit(restart_text, (200, 300))
 
         pygame.display.flip()
         clock.tick(60)
