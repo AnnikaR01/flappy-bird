@@ -1,6 +1,9 @@
+import json
 import random
 
 import pygame
+
+SAVE_FILE = "highscore.json"
 
 WIDTH = 800
 HEIGHT = 600
@@ -49,7 +52,13 @@ def main():
     spawn_timer = 0
     game_over = False
     score = 0
-    best_score = 0
+
+    try:
+        with open(SAVE_FILE, "r") as f:
+            save_data = json.load(f)
+            best_score = save_data["best_score"]
+    except FileNotFoundError:
+        best_score = 0
 
     running = True
     while running:
@@ -122,6 +131,8 @@ def main():
 
             if score > best_score:
                 best_score = score
+                with open(SAVE_FILE, "w") as f:
+                    json.dump({"best_score": best_score}, f)
 
             if bird_y + BIRD_RADIUS >= HEIGHT:
                 game_over = True
