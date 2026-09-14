@@ -23,6 +23,9 @@ def main():
     pygame.display.set_caption("Flappy Bird")
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
+    flap_sound = pygame.mixer.Sound("assets/flap.wav")
+    hit_sound = pygame.mixer.Sound("assets/hit.wav")
+    bird_image = pygame.image.load("assets/bird.png").convert_alpha()
 
     bird_x = WIDTH // 2
     bird_y = HEIGHT // 2
@@ -68,6 +71,7 @@ def main():
                         }]
 
                     bird_velocity = FLAP_STRENGTH
+                    flap_sound.play()
                     started = True
 
         # 2. update physics (every frame, but only once the game has started, and not after a collision)
@@ -109,6 +113,7 @@ def main():
             for pipe in pipes:
                 if bird_rect.colliderect(pipe["top"]) or bird_rect.colliderect(pipe["bottom"]):
                     game_over = True
+                    hit_sound.play()
 
             for pipe in pipes:
                 if not pipe["scored"] and pipe["top"].x + PIPE_WIDTH < bird_x:
@@ -120,10 +125,12 @@ def main():
 
             if bird_y + BIRD_RADIUS >= HEIGHT:
                 game_over = True
+                hit_sound.play()
 
         # 3. draw
         screen.fill(SKY_BLUE)
-        pygame.draw.circle(screen, YELLOW, (bird_x, bird_y), BIRD_RADIUS)
+        bird_draw_rect = bird_image.get_rect(center=(bird_x, bird_y))
+        screen.blit(bird_image, bird_draw_rect)
         for pipe in pipes:
             pygame.draw.rect(screen, GREEN, pipe["top"])
             pygame.draw.rect(screen, GREEN, pipe["bottom"])
